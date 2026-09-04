@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://xmlns.oracle.com/osb/routing/service"
+                  xmlns:schema="http://xmlns.oracle.com/osb/routing/payload"
+                  targetNamespace="http://xmlns.oracle.com/osb/routing/service">
+
+    <wsdl:types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:import namespace="http://xmlns.oracle.com/osb/routing/payload" schemaLocation="../XSD/RoutingPayload.xsd"/>
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="RoutingRequestMessage">
+        <wsdl:part name="parameters" element="schema:RoutingRequest"/>
+    </wsdl:message>
+
+    <wsdl:message name="RoutingResponseMessage">
+        <wsdl:part name="parameters" element="schema:RoutingResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="ContentRouterPortType">
+        <wsdl:operation name="processRoute">
+            <wsdl:input message="tns:RoutingRequestMessage"/>
+            <wsdl:output message="tns:RoutingResponseMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="ContentRouterSOAPBinding" type="tns:ContentRouterPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="processRoute">
+            <soap:operation soapAction="processRoute"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="ContentRouterProxyService">
+        <wsdl:port name="ContentRouterPort" binding="tns:ContentRouterSOAPBinding">
+            <soap:address location="http://localhost:8080/osb/proxy/ContentBasedRouting"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>

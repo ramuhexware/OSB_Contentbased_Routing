@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:pipelineEntry xmlns:con="http://www.bea.com/wli/sb/pipeline/config"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:con1="http://www.bea.com/wli/sb/stages/transform/config"
+                   xmlns:con2="http://www.bea.com/wli/sb/stages/routing/config">
+    <con:coreEntry>
+        <con:description>Content-Based Router Pipeline with Java Callout and Branch Node</con:description>
+    </con:coreEntry>
+    <con:router>
+        <con:pipeline type="request" name="request-pipeline">
+            <con:stage name="ExtractAndEvaluateContent">
+                <con:context>
+                    <con1:userNsDecl prefix="pay" namespace="http://xmlns.oracle.com/osb/routing/payload"/>
+                </con:context>
+                <con:actions>
+                    <!-- Step 1: Assign payload fields to context variables -->
+                    <con1:assign varName="serviceType">
+                        <con1:expr>
+                            <con1:xqueryText>$body/pay:RoutingRequest/pay:Header/pay:serviceType/text()</con1:xqueryText>
+                        </con1:expr>
+                    </con1:assign>
+                    <con1:assign varName="customerTier">
+                        <con1:expr>
+                            <con1:xqueryText>$body/pay:RoutingRequest/pay:Header/pay:customerTier/text()</con1:xqueryText>
+                        </con1:expr>
+                    </con1:assign>
+                    <!-- Step 2: Java Callout to evaluate target endpoint -->
+                    <con1:javaCallout varName="resolvedTargetEndpoint">
+                        <con1:archive ref="osb-project/JavaCallout/ContentRouterCallout.jar"/>
+                        <con1:className>com.osb.routing.callout.OSBContentRouterCallout</con1:className>
+                        <con1:method>public static java.lang.String getRouteDestination(java.lang.String, java.lang.String)</con1:method>
+                        <con1:expr>
+                            <con1:xqueryText>$serviceType</con1:xqueryText>
+                        </con1:expr>
+                        <con1:expr>
+                            <con1:xqueryText>$customerTier</con1:xqueryText>
+                        </con1:expr>
+                    </con1:javaCallout>
+                </con:actions>
+            </con:stage>
+        </con:pipeline>
+        <con:pipeline type="response" name="response-pipeline">
+            <con:stage name="FormatResponse">
+                <con:actions>
+                    <!-- Execute XQuery transformation to build response -->
+                    <con1:replace varName="body" contents-only="true">
+                        <con1:expr>
+                            <con1:xqueryTransform>
+                                <con1:resource ref="osb-project/XQuery/ContentBasedRoutingRules"/>
+                                <con1:param name="req">
+                                    <con1:path>$body/pay:RoutingRequest</con1:path>
+                                </con1:param>
+                                <con1:param name="targetService">
+                                    <con1:path>$resolvedTargetEndpoint</con1:path>
+                                </con1:param>
+                            </con1:xqueryTransform>
+                        </con1:expr>
+                    </con1:replace>
+                </con:actions>
+            </con:stage>
+        </con:pipeline>
+        <con:flow>
+            <con:pipeline-node name="PipelineNode">
+                <con:request>request-pipeline</con:request>
+                <con:response>response-pipeline</con:response>
+            </con:pipeline-node>
+            <con:branch-node type="condition" name="ContentRoutingBranchNode">
+                <con:branch-table variable="serviceType">
+                    <!-- Branch 1: ORDER Service Types -->
+                    <con:branch value="ORDER">
+                        <con:flow>
+                            <con:branch-node type="condition" name="TierBranchNode">
+                                <con:branch-table variable="customerTier">
+                                    <con:branch value="PREMIUM">
+                                        <con:flow>
+                                            <con:route-node name="RouteToPremiumOrderService">
+                                                <con:actions>
+                                                    <con2:route>
+                                                        <con2:service ref="osb-project/BusinessServices/PremiumOrderMicroservice" xsi:type="ref:BusinessServiceRef"/>
+                                                        <con2:operation>processOrder</con2:operation>
+                                                    </con2:route>
+                                                </con:actions>
+                                            </con:route-node>
+                                        </con:flow>
+                                    </con:branch>
+                                    <con:default-branch>
+                                        <con:flow>
+                                            <con:route-node name="RouteToStandardOrderService">
+                                                <con:actions>
+                                                    <con2:route>
+                                                        <con2:service ref="osb-project/BusinessServices/StandardOrderMicroservice" xsi:type="ref:BusinessServiceRef"/>
+                                                        <con2:operation>processOrder</con2:operation>
+                                                    </con2:route>
+                                                </con:actions>
+                                            </con:route-node>
+                                        </con:flow>
+                                    </con:default-branch>
+                                </con:branch-table>
+                            </con:branch-node>
+                        </con:flow>
+                    </con:branch>
+                    <!-- Branch 2: PAYMENT Service Types -->
+                    <con:branch value="PAYMENT">
+                        <con:flow>
+                            <con:route-node name="RouteToPaymentService">
+                                <con:actions>
+                                    <con2:route>
+                                        <con2:service ref="osb-project/BusinessServices/PaymentMicroservice" xsi:type="ref:BusinessServiceRef"/>
+                                        <con2:operation>processPayment</con2:operation>
+                                    </con2:route>
+                                </con:actions>
+                            </con:route-node>
+                        </con:flow>
+                    </con:branch>
+                </con:branch-table>
+            </con:branch-node>
+        </con:flow>
+    </con:router>
+</con:pipelineEntry>

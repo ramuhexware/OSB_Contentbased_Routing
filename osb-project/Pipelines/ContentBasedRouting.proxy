@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml-fragment xmlns:ser="http://www.bea.com/wli/sb/services"
+              xmlns:tran="http://www.bea.com/wli/sb/transports"
+              xmlns:env="http://www.bea.com/wli/config/env"
+              xmlns:http="http://www.bea.com/wli/sb/transports/http">
+    <ser:coreEntry isProxy="true" isEnabled="true">
+        <ser:description>Proxy Service for OSB Content Based Routing to Java Microservices</ser:description>
+        <ser:binding type="SOAP" isBuf="false" xmlns:con="http://xmlns.oracle.com/osb/routing/service">
+            <con:wsdl ref="osb-project/WSDL/RequestRouter"/>
+            <con:binding name="ContentRouterSOAPBinding"/>
+        </ser:binding>
+        <ser:pipeline-node ref="osb-project/Pipelines/ContentBasedRouting"/>
+    </ser:coreEntry>
+    <ser:endpointConfig>
+        <tran:provider-id>http</tran:provider-id>
+        <tran:inbound>true</tran:inbound>
+        <tran:URI>
+            <env:value>/osb/proxy/ContentBasedRouting</env:value>
+        </tran:URI>
+        <tran:inbound-properties/>
+        <provider-specific>
+            <http:inbound-properties/>
+        </provider-specific>
+    </ser:endpointConfig>
+</xml-fragment>

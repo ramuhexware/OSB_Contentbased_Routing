@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: client-service
+
+osb:
+  proxy:
+    url: http://localhost:8080/osb/proxy/ContentBasedRouting
+
+logging:
+  level:
+    com.example.client: INFO

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml-fragment xmlns:ser="http://www.bea.com/wli/sb/services"
+              xmlns:tran="http://www.bea.com/wli/sb/transports"
+              xmlns:http="http://www.bea.com/wli/sb/transports/http"
+              xmlns:env="http://www.bea.com/wli/config/env">
+    <ser:coreEntry isProxy="false" isEnabled="true">
+        <ser:description>Business Service pointing to Java Premium Order Microservice (VIP SLA)</ser:description>
+        <ser:binding type="abstractWSDL"/>
+    </ser:coreEntry>
+    <ser:endpointConfig>
+        <tran:provider-id>http</tran:provider-id>
+        <tran:inbound>false</tran:inbound>
+        <tran:URI>
+            <env:value>http://localhost:8081/api/premium-orders</env:value>
+        </tran:URI>
+        <tran:outbound-properties>
+            <tran:load-balancing-algorithm>round-robin</tran:load-balancing-algorithm>
+            <tran:retry-count>2</tran:retry-count>
+            <tran:retry-interval>5</tran:retry-interval>
+        </tran:outbound-properties>
+        <provider-specific>
+            <http:outbound-properties>
+                <http:request-method>POST</http:request-method>
+                <http:connection-timeout>10</http:connection-timeout>
+                <http:read-timeout>10</http:read-timeout>
+            </http:outbound-properties>
+        </provider-specific>
+    </ser:endpointConfig>
+</xml-fragment>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://xmlns.oracle.com/osb/routing/payload"
+           xmlns:tns="http://xmlns.oracle.com/osb/routing/payload"
+           elementFormDefault="qualified">
+
+    <!-- Root Routing Request Message -->
+    <xs:element name="RoutingRequest" type="tns:RoutingRequestType"/>
+    <xs:element name="RoutingResponse" type="tns:RoutingResponseType"/>
+
+    <xs:complexType name="RoutingRequestType">
+        <xs:sequence>
+            <xs:element name="Header" type="tns:HeaderType"/>
+            <xs:element name="Payload" type="tns:PayloadType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HeaderType">
+        <xs:sequence>
+            <xs:element name="requestId" type="xs:string"/>
+            <xs:element name="timestamp" type="xs:dateTime"/>
+            <xs:element name="serviceType" type="xs:string"/> <!-- e.g., ORDER, PAYMENT -->
+            <xs:element name="customerTier" type="xs:string"/> <!-- e.g., PREMIUM, STANDARD -->
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PayloadType">
+        <xs:sequence>
+            <xs:element name="customerId" type="xs:string"/>
+            <xs:element name="amount" type="xs:double" minOccurs="0"/>
+            <xs:element name="items" type="xs:string" minOccurs="0"/>
+            <xs:element name="paymentMethod" type="xs:string" minOccurs="0"/>
+            <xs:element name="notes" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="RoutingResponseType">
+        <xs:sequence>
+            <xs:element name="requestId" type="xs:string"/>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="routedToService" type="xs:string"/>
+            <xs:element name="processedBy" type="xs:string"/>
+            <xs:element name="customerTier" type="xs:string"/>
+            <xs:element name="responseDetails" type="xs:string"/>
+            <xs:element name="timestamp" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

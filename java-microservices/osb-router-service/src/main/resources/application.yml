@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: osb-router-service
+
+routing:
+  target-endpoints:
+    premium-order: http://localhost:8081/api/premium-orders
+    standard-order: http://localhost:8082/api/standard-orders
+    payment: http://localhost:8083/api/payments
+
+logging:
+  level:
+    com.example.osb.router: INFO
